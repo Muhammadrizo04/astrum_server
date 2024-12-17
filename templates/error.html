@@ -1,0 +1,51 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}"/>
+    <title>Document</title>
+  </head>
+  <body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div class="container">
+        <div class="home d-flex justify-content-center align-items-center">
+            <form method="get" class="home__content">
+                <header class="home__header my-4 text-center">
+                    <h2>Search</h2>
+                </header>
+                {% if not certificate_found %}
+                    <div class="alert alert-danger" role="alert">
+                        Ushbu sertifikat topilmadi yoki mavjud emas
+                    </div>
+                {% endif %}
+                <div class="home__field d-flex">
+                    <select name="seria" required class="form-select w-50" id="inputGroupSelect01">
+                        <option value="MK">MK</option>
+                        <option value="DS">DS</option>
+                        <option value="SF">SF</option>
+                        <option value="FS">FS</option>
+                        <option value="BD">BD</option>
+                        <option value="FD">FD</option>
+                        <option value="CS">CS</option>
+			<option value="3D">3D</option>
+                    </select>
+                    <input
+                        required
+                        type="search"
+                        class="form-control w-100"
+                        placeholder="ID"
+                        name="sertificate_id"
+                    />
+                </div>
+                <div class="home__button my-2">
+                    <button class="btn btn-primary">Search</button>
+                </div>
+            </form>
+        </div>
+    </div>
+  </body>
+</html>

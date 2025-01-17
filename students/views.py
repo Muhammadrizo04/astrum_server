@@ -1,50 +1,44 @@
-import mimetypes
-
-from django.shortcuts import render, get_object_or_404, redirect
+from django.shortcuts import get_object_or_404
 from .models import *
-from django.db.models import Q
-from django.http import HttpResponse, FileResponse
-import csv
-from io import TextIOWrapper
-from datetime import datetime
+from django.http import FileResponse
 from django.shortcuts import render
-from io import BytesIO
-from .forms import SearchForm
-from .model import Python
+from .model import *
 
 def search_certificates(request):
     if 'sertificate_id' in request.GET and 'seria' in request.GET:
         sertificate_id = request.GET['sertificate_id']
         seria = request.GET['seria']
 
-        info = None  # Bo'sh ma'lumotlarni aniqlash uchun o'zgaruvchi
+        info = None  # Переменная для хранения найденного объекта
 
-        # Ma'lumotlarni 4 ta model orasida qidirish
-        if ITEducator.objects.filter(sertificate_id__iexact=sertificate_id, seria__iexact=seria).exists():
-            info = ITEducator.objects.get(sertificate_id__iexact=sertificate_id, seria__iexact=seria)
-        elif InteriorDesign.objects.filter(sertificate_id__iexact=sertificate_id, seria__iexact=seria).exists():
-            info = InteriorDesign.objects.get(sertificate_id__iexact=sertificate_id, seria__iexact=seria)
-        elif FullStack.objects.filter(sertificate_id__iexact=sertificate_id, seria__iexact=seria).exists():
-            info = FullStack.objects.get(sertificate_id__iexact=sertificate_id, seria__iexact=seria)
-        elif DataSciense.objects.filter(sertificate_id__iexact=sertificate_id, seria__iexact=seria).exists():
-            info = DataSciense.objects.get(sertificate_id__iexact=sertificate_id, seria__iexact=seria)
-        elif SoftWare.objects.filter(sertificate_id__iexact=sertificate_id, seria__iexact=seria).exists():
-            info = SoftWare.objects.get(sertificate_id__iexact=sertificate_id, seria__iexact=seria)
-        elif NetworkAdmin.objects.filter(sertificate_id__iexact=sertificate_id, seria__iexact=seria).exists():
-            info = NetworkAdmin.objects.get(sertificate_id__iexact=sertificate_id, seria__iexact=seria)
-        elif Other.objects.filter(sertificate_id__iexact=sertificate_id, seria__iexact=seria).exists():
-            info = Other.objects.get(sertificate_id__iexact=sertificate_id, seria__iexact=seria)
-        elif Python.objects.filter(sertificate_id__iexact=sertificate_id, seria__iexact=seria).exists():
-            info = Python.objects.get(sertificate_id__iexact=sertificate_id, seria__iexact=seria)
+        # Список моделей для перебора
+        models_to_check = [
+            ITEducator, InteriorDesign, FullStack, DataSciense, SoftWare,
+            Other, NetworkAdmin, Python, PythonModule, ReactModule,
+            PHPModule, CSharpModule
+        ]
 
+        # Перебираем модели и ищем объект
+        for model in models_to_check:
+            try:
+                info = model.objects.get(sertificate_id__iexact=sertificate_id, seria__iexact=seria)
+                break  # Если нашли, выходим из цикла
+            except model.DoesNotExist:
+                continue  # Если не нашли, продолжаем цикл
+
+        # Рендерим результат
         if info is not None:
             return render(request, 'sertificate.html', {'info': info})
         else:
-            return render(request, 'error.html',
-                          {'sertificate_id': sertificate_id, 'seria': seria})
+            return render(
+                request,
+                'error.html',
+                {'sertificate_id': sertificate_id, 'seria': seria}
+            )
     else:
-
         return render(request, 'index.html')
+
+
 
 
 def detail_view_mk(request, sertificate_id):
@@ -94,9 +88,27 @@ def detail_view_other(request, seria, sertificate_id):
     return render(request, 'info_other.html', {'student_other': student_other})
 
 
-def detail_view_python(request, seria, sertificate_id):
-    student_python = get_object_or_404(Python, seria=seria, sertificate_id=sertificate_id)
+def detail_view_python(request, sertificate_id):
+    student_python = get_object_or_404(Python, sertificate_id=sertificate_id)
     return render(request, 'python.html', {'student_python': student_python})
+
+
+def detail_view_modul(request, sertificate_id):
+    # Список всех моделей, которые нужно проверять
+    module_classes = [PythonModule, PHPModule, ReactModule, CSharpModule]
+    student_module = None
+
+    # Перебираем модели и пытаемся найти совпадение по certificate_id
+    for module_class in module_classes:
+        try:
+            student_module = module_class.objects.get(sertificate_id=sertificate_id)
+            break  # Если нашли, прекращаем поиск
+        except module_class.DoesNotExist:
+            continue  # Если не нашли, продолжаем проверять другие модели
+
+    return render(request, 'module.html', {'student_module': student_module})
+
+
 
 def download_file(request, filename):
     # Define Django project base directory

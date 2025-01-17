@@ -6,7 +6,7 @@ from django.contrib import admin, messages
 from .actions import *
 from django_admin_filters import DateRange, DateRangePicker
 from admin_numeric_filter.admin import RangeNumericFilter
-from .model import Python
+from .model import *
 
 class ITEducatorResource(resources.ModelResource):
     class Meta:
@@ -21,6 +21,7 @@ class ITEducatorAdmin(ImportExportModelAdmin):
     actions = [DownloadPptxFile]
     list_filter = (('create_date', DateRangePicker), ('sertificate_id_numeric', RangeNumericFilter),)
     list_per_page = 50
+
 
 class InteriorDesignResource(resources.ModelResource):
     class Meta:
@@ -123,3 +124,51 @@ class PythonAdmin(ImportExportModelAdmin):
     list_display = ('ism', 'familya', 'sharif', 'seria', 'sertificate_id',)
     actions = [DownloadPptxFile, clear_student_fields]
     list_filter = (('sertificate_id_numeric', RangeNumericFilter),)
+
+
+class PhpmoduleResource(resources.ModelResource):
+    class Meta:
+        model = PHPModule
+
+@admin.register(PHPModule)
+class PHPModuleAdmin(ImportExportModelAdmin):
+    resource_class = PhpmoduleResource
+    search_fields = ['first_name', 'last_name', 'middle_name', 'seria', 'sertificate_id',]
+    list_display = ('first_name', 'last_name', 'middle_name', 'seria', 'sertificate_id',)
+    actions = [DownloadPptxFile]
+
+class PythonModuleResource(resources.ModelResource):
+    class Meta:
+        model = PythonModule
+
+@admin.register(PythonModule)
+class PythonModuleAdmin(ImportExportModelAdmin):
+    resource_class = PythonModuleResource
+    search_fields = ['first_name', 'last_name', 'middle_name', 'seria', 'sertificate_id', ]
+    list_display = ('first_name', 'last_name', 'middle_name', 'seria', 'sertificate_id',)
+    actions = [DownloadPptxFile]
+
+
+
+class ReactModuleResource(resources.ModelResource):
+    class Meta:
+        model = ReactModule
+
+@admin.register(ReactModule)
+class ReactModuleAdmin(ImportExportModelAdmin):
+    resource_class = ReactModuleResource
+    search_fields = ['first_name', 'last_name', 'middle_name', 'seria', 'sertificate_id', ]
+    list_display = ('first_name', 'last_name', 'middle_name', 'seria', 'sertificate_id',)
+    actions = [DownloadPptxFile]
+
+
+class CSharpModuleResource(resources.ModelResource):
+    class Meta:
+        model = CSharpModule
+
+@admin.register(CSharpModule)
+class PHPmoduleAdmin(ImportExportModelAdmin):
+    resource_class = CSharpModuleResource
+    search_fields = ['first_name', 'last_name', 'middle_name', 'seria', 'sertificate_id', ]
+    list_display = ('first_name', 'last_name', 'middle_name', 'seria', 'sertificate_id',)
+    actions = [DownloadPptxFile]

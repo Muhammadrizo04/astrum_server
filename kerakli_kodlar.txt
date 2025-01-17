@@ -1,0 +1,872 @@
+ADMIN.PY
+
+
+# class DataScienseResource(resources.ModelResource):
+#     class Meta:
+#         model = DataSciense
+
+# @admin.register(DataSciense)
+# class DataSciense_Admin(ImportExportModelAdmin):
+#     resource_class = DataScienseResource
+#     search_fields = ['ism', 'familya', 'sharif', 'sertificate_id', 'seria', ]
+#     list_display = ('ism', 'familya', 'sharif','seria', 'sertificate_id','pptx_file',)
+    
+
+# class FullStackResource(resources.ModelResource):
+#     class Meta:
+#         model = FullStack
+
+
+# @admin.register(FullStack)
+# class Fullstack_Admin(ImportExportModelAdmin):
+#     resource_class = FullStackResource
+#     search_fields = ['ism', 'familya', 'sharif', 'sertificate_id', 'seria', ]
+#     list_display = ('ism', 'familya', 'sharif','seria', 'sertificate_id','pptx_file')
+    
+
+
+# class SoftWareResource(resources.ModelResource):
+#     class Meta:
+#         model = SoftWare
+
+# @admin.register(SoftWare)
+# class Software_Admin(ImportExportModelAdmin):
+#     resource_class = SoftWareResource
+#     search_fields = ['ism', 'familya', 'sharif', 'sertificate_id', 'seria', ]
+#     list_display = ('ism', 'familya', 'sharif','seria','sertificate_id','pptx_file')
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+MODELS.PY
+
+# class FullStack(models.Model):
+#     ism = models.CharField(max_length=50)
+#     familya = models.CharField(max_length=50)
+#     sharif = models.CharField(max_length=50)
+#     berilgan_vaqt = models.DateField(auto_now=False)
+#     preseason_web = models.CharField(max_length=6)
+#     season_arc = models.CharField(max_length=6)
+#     season_fullstack = models.CharField(max_length=6)
+#     frontend =  models.CharField(blank=True, max_length=6)
+#     backend = models.CharField(blank=True, max_length=6)
+#     seria = models.CharField(max_length=3, blank=True)
+#     sertificate_id = models.CharField(max_length=7, unique=True, blank=True)
+#     frontend_url = models.URLField(blank=True)
+#     backend_url = models.URLField(blank=True)
+#     frontend_qrcode = models.ImageField(upload_to='frontend_qrcode',blank=True)
+#     backend_qrcode = models.ImageField(upload_to='backend_qrcode', blank=True)
+#     pptx_file = models.FileField(upload_to='pptx_FS', blank=True)
+#     qr_code = models.ImageField(upload_to='fullstack_qrcode/', blank=True)
+#     sertificate_front = models.FileField(upload_to='fullstack_ser_front/', blank=True)
+#     sertificate_back = models.FileField(upload_to='fullstack_ser_back/', blank=True)
+
+#     def __str__(self):
+#         return self.ism
+    
+#     def generate_seria(self):
+#         if not self.backend_url:
+#             return "FD"
+#         elif not self.frontend_url:
+#             return "BD"
+#         else:
+#             return "FS"
+        
+#     def generate_sertificate_id(self):
+#         last_student = FullStack.objects.order_by('-sertificate_id').first()
+#         if last_student and last_student.sertificate_id:
+#             last_id_int = int(last_student.sertificate_id)
+#             new_id_int = last_id_int + 1
+#             new_id_str = str(new_id_int).zfill(7)
+#             return new_id_str
+#         return "0000001"    
+    
+
+    
+#     def overlay_qr_code_front(self, background_path, qr_code_path, output_path, position, qr_size):
+#         background = Image.open(background_path)
+#         qr_code = Image.open(qr_code_path).resize((qr_size, qr_size), Image.LANCZOS)
+
+#         qr_code = qr_code.convert("RGBA")
+#         data = qr_code.getdata()
+#         new_data = [(255, 255, 255, 0) if item[:3] == (255, 255, 255) else item for item in data]
+#         qr_code.putdata(new_data)
+
+#         background.paste(qr_code, position, qr_code)
+
+#         font = ImageFont.truetype(os.path.join(settings.BASE_DIR, 'media/template/arialmt.ttf'), size=100)
+#         draw = ImageDraw.Draw(background)
+#         seria_font = ImageFont.truetype(os.path.join(settings.BASE_DIR, 'media/template/arialmt.ttf'), size=45)
+
+
+        
+
+#         black_color = (0, 0, 0)
+#         text_color = (0x54, 0x30, 0xCE)
+
+#         text = f"{self.ism} {self.familya} {self.sharif}"
+#         draw.text((1500, 980), text,fill=text_color, anchor="ms", font=font)
+#         draw.text((800, 1810), f"{self.seria} {self.sertificate_id}", fill=black_color, font=seria_font)
+#         draw.text((1350, 1810), f"{self.berilgan_vaqt}", fill=black_color, font=seria_font)
+
+#         background.save(output_path)
+
+#  # draw.text((530,480), "Backend dasturlash tushun-\nchalarini o'z ichiga olgan 4ta\n loyihani to'liq yakunladi", fill=text_color, font=font_size)
+#                 # draw.text((30,470), "Frontend dasturlash tudhun-\nchalarini o'z ichiga olgan\n50 ta mashqni va 4 ta\nloyin 'ReactJS'da to'liq\nyakunladi", fill=text_color, font=font_size)
+    
+#     def overlay_qr_code_back(self, background_path, qr_code_path_front, qr_code_path_back, output_path, position_front, qr_size_front, position_back, qr_size_back, is_frontend_available=True, is_backend_available=True):
+#         background = Image.open(background_path)
+#         draw = ImageDraw.Draw(background)
+
+#         if qr_code_path_front is not None and is_frontend_available:
+#             frontend_qrcode = Image.open(qr_code_path_front).resize((qr_size_front, qr_size_front), Image.LANCZOS)
+#             frontend_qrcode = frontend_qrcode.convert("RGBA")
+#             data = frontend_qrcode.getdata()
+#             new_data = [(255, 255, 255, 0) if item[:3] == (255, 255, 255) else item for item in data]
+#             frontend_qrcode.putdata(new_data)
+#             background.paste(frontend_qrcode, position_front, frontend_qrcode)
+
+#         if qr_code_path_back is not None and is_backend_available:
+#             backend_qrcode = Image.open(qr_code_path_back).resize((qr_size_back, qr_size_back), Image.LANCZOS)
+#             backend_qrcode = backend_qrcode.convert("RGBA")
+#             data = backend_qrcode.getdata()
+#             new_data = [(255, 255, 255, 0) if item[:3] == (255, 255, 255) else item for item in data]
+#             backend_qrcode.putdata(new_data)
+#             background.paste(backend_qrcode, position_back, backend_qrcode)
+            
+
+
+#         font = ImageFont.truetype(os.path.join(settings.BASE_DIR, 'media/template/arialmt.ttf'), size=100)
+#         seria_font = ImageFont.truetype(os.path.join(settings.BASE_DIR, 'media/template/arialmt.ttf'), size=80)
+#         seria_font_sr = ImageFont.truetype(os.path.join(settings.BASE_DIR,"media/template/arialmt.ttf"), size=45)
+
+#         black_color = (0, 0, 0)
+#         text_color = (0x54, 0x30, 0xCE)
+#         text = f"{self.ism} {self.familya} {self.sharif}"
+#         draw.text((1500, 440), text,fill=text_color, anchor="ms", font=font)
+
+#         # draw.text((205, 115), f"{self.ism} {self.familya} {self.sharif}", fill=text_color, font=font)
+#         draw.text((190, 128), f"{self.seria} {self.sertificate_id}", fill=black_color, font = seria_font_sr)
+#         draw.text((890, 1150), f"{self.preseason_web}", fill=black_color, font = seria_font)
+#         draw.text((1760, 1150), f"{self.season_arc}", fill=black_color, font = seria_font)
+#         draw.text((2700, 1150), f"{self.season_fullstack}", fill=black_color, font = seria_font)
+#         draw.text((1120, 1300), f"{self.frontend}", fill=black_color, font = seria_font)
+#         draw.text((2620, 1300), f"{self.backend}", fill=black_color, font = seria_font)
+
+#         background.save(output_path)
+
+    
+        
+#     def add_image(self, prs, slide_index, image_path, left, top, height):
+#         slide = prs.slides[slide_index]
+#         image = Image.open(image_path)
+#         image = image.convert('RGBA')
+#         data = list(image.getdata())
+#         new_data = [(255, 255, 255, 0) if item[:3] == (255, 255, 255) else item for item in data]
+#         new_image = Image.new('RGBA', image.size)
+#         new_image.putdata(new_data)
+#         image_stream = BytesIO()
+#         new_image.save(image_stream, format="PNG")
+#         image_stream.seek(0)
+#         slide.shapes.add_picture(image_stream, left, top, height=height)
+
+#     def add_text(self,prs, slide_index, left, top, width, height, input_text, font_size, font_color, font_name='Arial', alignment=PP_ALIGN.LEFT):
+#         slide = prs.slides[slide_index]
+#         text_box = slide.shapes.add_textbox(left, top, width, height)
+#         text_frame = text_box.text_frame
+#         text = text_frame.add_paragraph()
+#         text.text = input_text  
+#         text.font.size = Pt(font_size)
+#         text.font.name = font_name
+#         text.font.color.rgb = RGBColor(font_color[0], font_color[1], font_color[2])
+#         text.alignment = alignment
+
+#     def generate_certificate(self):
+#         if not self.frontend_url:
+#             pptx_template_path = os.path.join(settings.MEDIA_ROOT, 'template/back.pptx')
+#         if not self.backend_url:
+#             pptx_template_path = os.path.join(settings.MEDIA_ROOT, 'template/front.pptx')
+#         else:
+#             pptx_template_path = os.path.join(settings.MEDIA_ROOT, 'template/fullstack.pptx')
+#         prs = Presentation(pptx_template_path)
+
+#         black_color = (0, 0, 0,)
+#         text_color = (0x54, 0x30, 0xCE)
+#         text = f"{self.ism} {self.familya} {self.sharif}"
+#         seria = f"{self.seria} {self.sertificate_id}"
+#         qr_code = os.path.join(settings.MEDIA_ROOT, f'fullstack_qrcode/qr_code-{self.sertificate_id}.png')
+#         qr_code_img_back = os.path.join(settings.MEDIA_ROOT, f'backend_qrcode/qr_code-{self.sertificate_id}.png')
+#         qr_code_img_front = os.path.join(settings.MEDIA_ROOT, f'frontend_qrcode/qr_code-{self.sertificate_id}.png')
+#         berilgan_vaqt_str = self.berilgan_vaqt.strftime('%Y-%m-%d')
+#         # Slayd 0
+#         self.add_image(prs, 0, qr_code, Inches(0.3), Inches(4.7), Inches(1.8))
+#         self.add_text(prs, 0, Inches(1), Inches(2.55), Inches(8), Inches(1), text, 28, text_color, alignment=PP_ALIGN.CENTER)
+#         self.add_text(prs, 0, Inches(4.37), Inches(5.64), Inches(1), Inches(1), berilgan_vaqt_str, 11, black_color,)
+#         self.add_text(prs, 0, Inches(2.55), Inches(5.64), Inches(1), Inches(1), seria, 11, black_color)
+
+#         # Slayd 1
+#         self.add_text(prs, 1, Inches(0.54), Inches(0.028), Inches(1), Inches(0.8), seria, 11, black_color)
+#         self.add_text(prs, 1, Inches(1), Inches(0.75), Inches(8), Inches(1), text, 28, text_color, alignment=PP_ALIGN.CENTER)
+#         self.add_text(prs, 1, Inches(3.1181102362), Inches(3.4645669291), Inches(1), Inches(1), self.preseason_web, 12, black_color)
+#         self.add_text(prs, 1, Inches(5.9212598425), Inches(3.4645669291), Inches(1), Inches(1), self.season_arc, 12, black_color)
+#         self.add_text(prs, 1, Inches(8.9330708661), Inches(3.4645669291), Inches(1), Inches(1), self.season_fullstack, 12, black_color)
+#         self.add_text(prs, 1, Inches(3.82), Inches(4.0433070866), Inches(1), Inches(1), self.frontend, 12, black_color)
+#         self.add_text(prs, 1, Inches(8.90), Inches(4.0433070866), Inches(1), Inches(1), self.backend, 12, black_color)
+
+#         if not self.backend_url:
+#             self.add_image(prs, 1, qr_code_img_front, Inches(3.3661417323), Inches(4.842519685), Inches(1.4))
+#         if not self.frontend_url:
+#             self.add_image(prs, 1, qr_code_img_back, Inches(8.4645669291), Inches(4.842519685), Inches(1.4))
+#         elif self.backend_url and self.frontend_url:
+#             self.add_image(prs, 1, qr_code_img_back, Inches(8.4645669291), Inches(4.842519685), Inches(1.4))
+#             self.add_image(prs, 1, qr_code_img_front, Inches(3.3661417323), Inches(4.842519685), Inches(1.4))
+
+
+# # add_image(prs, slayd, png, left,top,height)
+
+
+# #add_text(prs, slayd, left, top, width, height, text, size, color)
+#         pptx_buffer = BytesIO()
+#         prs.save(pptx_buffer)
+#         pptx_buffer.seek(0)
+
+#         return pptx_buffer
+
+    
+
+#     def save(self, *args, **kwargs):
+#         if not self.seria:
+#             self.seria = self.generate_seria()
+
+#         if not self.sertificate_id:
+#             self.sertificate_id = self.generate_sertificate_id()
+        
+#         if self.frontend_url:
+#             qr_code_img_front = qrcode.make(f"{self.frontend_url}")
+#             canvas = Image.new('RGB', (500, 500), 'white')
+#             canvas.paste(qr_code_img_front)
+#             buffer = BytesIO()
+#             canvas.save(buffer, format='PNG')
+#             qr_code_file_name = f'qr_code-{self.sertificate_id}.png'
+#             self.frontend_qrcode.save(qr_code_file_name, File(buffer), save=False)
+#             canvas.close()
+
+#         if self.backend_url:
+#             qr_code_img_back = qrcode.make(f"{self.backend_url}")
+#             canvas = Image.new('RGB', (500, 500), 'white')
+#             canvas.paste(qr_code_img_back)
+#             buffer = BytesIO()
+#             canvas.save(buffer, format='PNG')
+#             qr_code_file_name = f'qr_code-{self.sertificate_id}.png'
+#             self.backend_qrcode.save(qr_code_file_name, File(buffer), save=False)
+#             canvas.close()
+
+#         qr_code_img = qrcode.make(f"http://127.0.0.1:8000/FS/{self.sertificate_id}/")
+#         canvas = Image.new('RGB', (380, 380), 'white')
+#         canvas.paste(qr_code_img)
+#         buffer = BytesIO()
+#         canvas.save(buffer, format='PNG')
+#         qr_code_file_name = f'qr_code-{self.sertificate_id}.png'
+#         self.qr_code.save(qr_code_file_name, File(buffer), save=False)
+#         canvas.close()
+
+#         if not self.sertificate_front:
+#             if not self.backend_url:
+#                 background_image_path_front = os.path.join(settings.MEDIA_ROOT, 'template/frontend.png')
+#             elif not self.frontend_url:
+#                 background_image_path_front = os.path.join(settings.MEDIA_ROOT, 'template/backend.png')
+#             else:
+#                 background_image_path_front = os.path.join(settings.MEDIA_ROOT, 'template/fullstack_front.png')
+#             qr_code_image_path_front = os.path.join(settings.MEDIA_ROOT, f'fullstack_qrcode/qr_code-{self.sertificate_id}.png')
+#             output_image_path_front = os.path.join(settings.MEDIA_ROOT, f'fullstack_ser_front/certificate-{self.sertificate_id}.png')
+#             self.overlay_qr_code_front(background_image_path_front, qr_code_image_path_front, output_image_path_front, (102, 1420), 520)
+#             self.sertificate_front = os.path.relpath(output_image_path_front, settings.MEDIA_ROOT)
+
+#         if not self.sertificate_back:
+#             if not self.backend_url:
+#                 background_image_path_back = os.path.join(settings.MEDIA_ROOT, 'template/frontend_1.png')
+#             elif not self.frontend_url:
+#                 background_image_path_back = os.path.join(settings.MEDIA_ROOT, 'template/backend_1.png')
+#             else:
+#                 background_image_path_back = os.path.join(settings.MEDIA_ROOT, 'template/fullstack_back.png')
+#             qr_code_img_front = None
+#             qr_code_img_back = None
+#             output_image_path_back = None
+                    
+#             if self.frontend_url:
+#                 qr_code_img_front = os.path.join(settings.MEDIA_ROOT, f'frontend_qrcode/qr_code-{self.sertificate_id}.png')
+#             if self.backend_url:
+#                 qr_code_img_back = os.path.join(settings.MEDIA_ROOT, f'backend_qrcode/qr_code-{self.sertificate_id}.png')
+
+#             if qr_code_img_front or qr_code_img_back:
+#                 output_image_path_back = os.path.join(settings.MEDIA_ROOT, f'fullstack_ser_back/certificate-{self.sertificate_id}.png')
+                
+                
+#                 self.overlay_qr_code_back(background_image_path_back, qr_code_img_front, qr_code_img_back, output_image_path_back, (1010, 1460), 410, (2545, 1460), 410, is_frontend_available=bool(qr_code_img_front), is_backend_available=bool(qr_code_img_back))
+                
+#                 self.sertificate_back.save(os.path.basename(output_image_path_back), File(open(output_image_path_back, 'rb')))
+
+
+#         if not self.pptx_file:
+#             pptx_buffer = self.generate_certificate()
+#             self.pptx_file.save(f'certificate-{self.sertificate_id}.pptx', ContentFile(pptx_buffer.read()), save=False)
+
+
+#         super(FullStack, self).save(*args, **kwargs)
+
+
+            
+# class DataSciense(models.Model):
+#     ism = models.CharField(max_length=50)
+#     familya = models.CharField(max_length=50)
+#     sharif = models.CharField(max_length=50)
+#     berilgan_vaqt = models.DateField(auto_now=False)
+#     preseason_data = models.CharField(max_length=6)
+#     season_arc = models.CharField(max_length=6)
+#     data_science =  models.CharField(blank=True, max_length=6)
+#     machina_learning = models.CharField(blank=True, max_length=6)
+#     seria = models.CharField(max_length=3, blank=True)
+#     sertificate_id = models.CharField(max_length=7, unique=True, blank=True)
+#     data_science_url = models.URLField(blank=True)
+#     machina_learning_url = models.URLField(blank=True)
+#     data_science_qrcode = models.ImageField(upload_to='datascience_qrcode/',blank=True)
+#     machina_learning_qrcode = models.ImageField(upload_to='machinalr_qrcode/', blank=True)
+#     qr_code = models.ImageField(upload_to='data_qrcode/', blank=True)
+#     pptx_file = models.FileField(upload_to='pptx_DT', blank=True)
+#     sertificate_front = models.FileField(upload_to='data_ser_front/', blank=True)
+#     sertificate_back = models.FileField(upload_to='data_ser_back/', blank=True)
+
+#     def __str__(self):
+#         return self.ism
+    
+#     def generate_seria(self):
+#         return 'DS'
+
+#     def generate_sertificate_id(self):
+#         last_student = DataSciense.objects.order_by('-sertificate_id').first()
+#         if last_student and last_student.sertificate_id:
+#             last_id_int = int(last_student.sertificate_id)
+#             new_id_int = last_id_int + 1
+#             new_id_str = str(new_id_int).zfill(7)
+#             return new_id_str
+#         return "0000001"
+    
+
+#     def overlay_qr_code_front(self, background_path, qr_code_path, output_path, position, qr_size):
+#         background = Image.open(background_path)
+#         qr_code = Image.open(qr_code_path).resize((qr_size, qr_size), Image.LANCZOS)
+
+#         qr_code = qr_code.convert("RGBA")
+#         data = qr_code.getdata()
+#         new_data = [(255, 255, 255, 0) if item[:3] == (255, 255, 255) else item for item in data]
+#         qr_code.putdata(new_data)
+
+#         background.paste(qr_code, position, qr_code)
+
+#         font = ImageFont.truetype(os.path.join(settings.BASE_DIR, 'media/template/arialmt.ttf'), size=100)
+#         draw = ImageDraw.Draw(background)
+#         seria_font = ImageFont.truetype(os.path.join(settings.BASE_DIR, 'media/template/arialmt.ttf'), size=45)
+
+
+        
+
+#         black_color = (0, 0, 0)
+#         text_color = (0x54, 0x30, 0xCE)
+
+#         text = f"{self.ism} {self.familya} {self.sharif}"
+#         draw.text((1500, 980), text,fill=text_color, anchor="ms", font=font, stroke_width=4)
+#         draw.text((800, 1810), f"{self.seria} {self.sertificate_id}", fill=black_color, font=seria_font)
+#         draw.text((1350, 1810), f"{self.berilgan_vaqt}", fill=black_color, font=seria_font)
+
+#         background.save(output_path)
+
+
+#     def overlay_qr_code_back(self, background_path, qr_code_path_front, qr_code_path_back, output_path, position_front, qr_size_front, position_back, qr_size_back, is_frontend_available=True, is_backend_available=True):
+#         background = Image.open(background_path)
+#         draw = ImageDraw.Draw(background)
+
+#         if qr_code_path_front is not None and is_frontend_available:
+#             frontend_qrcode = Image.open(qr_code_path_front).resize((qr_size_front, qr_size_front), Image.LANCZOS)
+#             frontend_qrcode = frontend_qrcode.convert("RGBA")
+#             data = frontend_qrcode.getdata()
+#             new_data = [(255, 255, 255, 0) if item[:3] == (255, 255, 255) else item for item in data]
+#             frontend_qrcode.putdata(new_data)
+#             background.paste(frontend_qrcode, position_front, frontend_qrcode)
+
+#         if qr_code_path_back is not None and is_backend_available:
+#             backend_qrcode = Image.open(qr_code_path_back).resize((qr_size_back, qr_size_back), Image.LANCZOS)
+#             backend_qrcode = backend_qrcode.convert("RGBA")
+#             data = backend_qrcode.getdata()
+#             new_data = [(255, 255, 255, 0) if item[:3] == (255, 255, 255) else item for item in data]
+#             backend_qrcode.putdata(new_data)
+#             background.paste(backend_qrcode, position_back, backend_qrcode)
+            
+
+
+#         font = ImageFont.truetype(os.path.join(settings.BASE_DIR, 'media/template/arialmt.ttf'), size=100)
+#         seria_font = ImageFont.truetype(os.path.join(settings.BASE_DIR, 'media/template/arialmt.ttf'), size=80)
+#         seria_font_sr = ImageFont.truetype(os.path.join(settings.BASE_DIR,"media/template/arialmt.ttf"), size=45)
+
+#         black_color = (0, 0, 0)
+#         text_color = (0x54, 0x30, 0xCE)
+#         text = f"{self.ism} {self.familya} {self.sharif}"
+#         draw.text((1500, 440), text,fill=text_color, anchor="ms", font=font)
+
+#         # draw.text((205, 115), f"{self.ism} {self.familya} {self.sharif}", fill=text_color, font=font)
+#         draw.text((190, 128), f"{self.seria} {self.sertificate_id}", fill=black_color, font = seria_font_sr)
+#         draw.text((890, 1150), f"{self.preseason_data}", fill=black_color, font = seria_font)
+#         draw.text((2700, 1150), f"{self.season_arc}", fill=black_color, font = seria_font)
+#         draw.text((1120, 1300), f"{self.data_science}", fill=black_color, font = seria_font)
+#         draw.text((2620, 1300), f"{self.machina_learning}", fill=black_color, font = seria_font)
+
+#         background.save(output_path)
+
+
+
+
+#     def add_image(self, prs, slide_index, image_path, left, top, height):
+#         slide = prs.slides[slide_index]
+#         image = Image.open(image_path)
+#         image = image.convert('RGBA')
+#         data = list(image.getdata())
+#         new_data = [(255, 255, 255, 0) if item[:3] == (255, 255, 255) else item for item in data]
+#         new_image = Image.new('RGBA', image.size)
+#         new_image.putdata(new_data)
+#         image_stream = BytesIO()
+#         new_image.save(image_stream, format="PNG")
+#         image_stream.seek(0)
+#         slide.shapes.add_picture(image_stream, left, top, height=height)
+
+#     def add_text(self,prs, slide_index, left, top, width, height, input_text, font_size, font_color, font_name='Arial', alignment=PP_ALIGN.LEFT):
+#         slide = prs.slides[slide_index]
+#         text_box = slide.shapes.add_textbox(left, top, width, height)
+#         text_frame = text_box.text_frame
+#         text = text_frame.add_paragraph()
+#         text.text = input_text  
+#         text.font.size = Pt(font_size)
+#         text.font.name = font_name
+#         text.font.color.rgb = RGBColor(font_color[0], font_color[1], font_color[2])
+#         text.alignment = alignment
+
+
+#     def generate_certificate(self):
+#         if not self.machina_learning_url:
+#             pptx_template_path = os.path.join(settings.MEDIA_ROOT, 'template/data.pptx')
+#         else:
+#             pptx_template_path = os.path.join(settings.MEDIA_ROOT, 'template/machine.pptx')
+#         prs = Presentation(pptx_template_path)
+
+#         black_color = (0, 0, 0,)
+#         text_color = (0x54, 0x30, 0xCE)
+#         text = f"{self.ism} {self.familya} {self.sharif}"
+#         seria = f"{self.seria} {self.sertificate_id}"
+#         qr_code = os.path.join(settings.MEDIA_ROOT, f'data_qrcode/qr_code-{self.sertificate_id}.png')
+#         qr_code_machnelr = os.path.join(settings.MEDIA_ROOT, f'machinalr_qrcode/qr_code-{self.sertificate_id}.png')
+#         qr_code_data = os.path.join(settings.MEDIA_ROOT, f'datascience_qrcode/qr_code-{self.sertificate_id}.png')
+#         berilgan_vaqt_str = self.berilgan_vaqt.strftime('%Y-%m-%d')
+#         # Slayd 0
+#         self.add_image(prs, 0, qr_code, Inches(0.3), Inches(4.7), Inches(1.8))
+#         self.add_text(prs, 0, Inches(1), Inches(2.55), Inches(8), Inches(1), text, 28, text_color, alignment=PP_ALIGN.CENTER)
+#         self.add_text(prs, 0, Inches(4.37), Inches(5.64), Inches(1), Inches(1), berilgan_vaqt_str, 11, black_color,)
+#         self.add_text(prs, 0, Inches(2.55), Inches(5.64), Inches(1), Inches(1), seria, 11, black_color)
+
+#         # Slayd 1
+#         self.add_text(prs, 1, Inches(0.54), Inches(0.028), Inches(1), Inches(0.8), seria, 11, black_color)
+#         self.add_text(prs, 1, Inches(1), Inches(0.75), Inches(8), Inches(1), text, 28, text_color, alignment=PP_ALIGN.CENTER)
+#         self.add_text(prs, 1, Inches(3.82), Inches(3.4645669291), Inches(1), Inches(1), self.preseason_data, 12, black_color)
+#         self.add_text(prs, 1, Inches(8.90), Inches(3.4645669291), Inches(1), Inches(1), self.season_arc, 12, black_color)
+#         self.add_text(prs, 1, Inches(3.82), Inches(4.0433070866), Inches(1), Inches(1), self.data_science, 12, black_color)
+#         self.add_text(prs, 1, Inches(8.90), Inches(4.0433070866), Inches(1), Inches(1), self.machina_learning, 12, black_color)
+
+#         if not self.machina_learning_url:
+#             self.add_image(prs, 1, qr_code_data, Inches(3.3661417323), Inches(4.842519685), Inches(1.4))
+#         elif self.machina_learning_url:
+#             self.add_image(prs, 1, qr_code_machnelr, Inches(8.4645669291), Inches(4.842519685), Inches(1.4))
+#             self.add_image(prs, 1, qr_code_data, Inches(3.3661417323), Inches(4.842519685), Inches(1.4))
+
+
+# # add_image(prs, slayd, png, left,top,height)
+
+
+# #add_text(prs, slayd, left, top, width, height, text, size, color)
+#         pptx_buffer = BytesIO()
+#         prs.save(pptx_buffer)
+#         pptx_buffer.seek(0)
+
+#         return pptx_buffer
+
+
+    
+
+#     def save(self, *args, **kwargs):
+#         if not self.seria:
+#             self.seria = self.generate_seria()
+
+#         if not self.sertificate_id:
+#             self.sertificate_id = self.generate_sertificate_id()
+        
+#         if self.data_science_url:
+#             qr_code_img_front = qrcode.make(f"{self.data_science_url}")
+#             canvas = Image.new('RGB', (500, 500), 'white')
+#             canvas.paste(qr_code_img_front)
+#             buffer = BytesIO()
+#             canvas.save(buffer, format='PNG')
+#             qr_code_file_name = f'qr_code-{self.sertificate_id}.png'
+#             self.data_science_qrcode.save(qr_code_file_name, File(buffer), save=False)
+#             canvas.close()
+
+#         if self.machina_learning_url:
+#             qr_code_img_back = qrcode.make(f"{self.machina_learning_url}")
+#             canvas = Image.new('RGB', (500, 500), 'white')
+#             canvas.paste(qr_code_img_back)
+#             buffer = BytesIO()
+#             canvas.save(buffer, format='PNG')
+#             qr_code_file_name = f'qr_code-{self.sertificate_id}.png'
+#             self.machina_learning_qrcode.save(qr_code_file_name, File(buffer), save=False)
+#             canvas.close()
+
+#         qr_code_img = qrcode.make(f"http://127.0.0.1:8000/DT/{self.sertificate_id}/")
+#         canvas = Image.new('RGB', (380, 380), 'white')
+#         canvas.paste(qr_code_img)
+#         buffer = BytesIO()
+#         canvas.save(buffer, format='PNG')
+#         qr_code_file_name = f'qr_code-{self.sertificate_id}.png'
+#         self.qr_code.save(qr_code_file_name, File(buffer), save=False)
+#         canvas.close()
+
+#         if not self.sertificate_front:
+#             background_image_path_front = os.path.join(settings.MEDIA_ROOT, 'template/datascine.png')
+#             qr_code_image_path_front = os.path.join(settings.MEDIA_ROOT, f'data_qrcode/qr_code-{self.sertificate_id}.png')
+#             output_image_path_front = os.path.join(settings.MEDIA_ROOT, f'data_ser_front/certificate-{self.sertificate_id}.png')
+#             self.overlay_qr_code_front(background_image_path_front, qr_code_image_path_front, output_image_path_front, (105, 1420), 520)
+#             self.sertificate_front = os.path.relpath(output_image_path_front, settings.MEDIA_ROOT)
+
+#         if not self.sertificate_back:
+#             if not self.machina_learning_url:
+#                 background_image_path_back = os.path.join(settings.MEDIA_ROOT, 'template/datascine_1.png')
+#             else:
+#                 background_image_path_back = os.path.join(settings.MEDIA_ROOT, 'template/machinelr_1.png')
+#             qr_code_img_front = None
+#             qr_code_img_back = None
+#             output_image_path_back = None
+                    
+#             if self.data_science_url:
+#                 qr_code_img_front = os.path.join(settings.MEDIA_ROOT, f'datascience_qrcode/qr_code-{self.sertificate_id}.png')
+#             if self.machina_learning_url:
+#                 qr_code_img_back = os.path.join(settings.MEDIA_ROOT, f'machinalr_qrcode/qr_code-{self.sertificate_id}.png')
+
+#             if qr_code_img_front or qr_code_img_back:
+#                 output_image_path_back = os.path.join(settings.MEDIA_ROOT, f'data_ser_back/certificate-{self.sertificate_id}.png')
+                
+#                 # Set the coordinates for "Not Available" text
+                
+#                 self.overlay_qr_code_back(background_image_path_back, qr_code_img_front, qr_code_img_back, output_image_path_back, (1010, 1460), 410, (2545, 1460), 410, is_frontend_available=bool(qr_code_img_front), is_backend_available=bool(qr_code_img_back))
+                
+#                 self.sertificate_back.save(os.path.basename(output_image_path_back), File(open(output_image_path_back, 'rb')))
+
+
+#         if not self.pptx_file:
+#             pptx_buffer = self.generate_certificate()
+#             self.pptx_file.save(f'certificate-{self.sertificate_id}.pptx', ContentFile(pptx_buffer.read()), save=False)
+
+#         super(DataSciense, self).save(*args, **kwargs)
+
+
+# class SoftWare(models.Model):
+#     ism = models.CharField(max_length=50)
+#     familya = models.CharField(max_length=50)
+#     sharif = models.CharField(max_length=50)
+#     berilgan_vaqt = models.DateField(auto_now=False)
+#     preseason_web = models.CharField(max_length=6)
+#     season_arc = models.CharField(max_length=6)
+#     season_arc_2 =  models.CharField(blank=True, max_length=6)
+#     software = models.CharField(blank=True, max_length=6)
+#     rust = models.CharField(blank=True, max_length=6)
+#     seria = models.CharField(max_length=3, blank=True)
+#     sertificate_id = models.CharField(max_length=7, unique=True, blank=True)
+#     software_url = models.URLField(blank=True)
+#     rust_url = models.URLField(blank=True)
+#     software_qrcode = models.ImageField(upload_to='soft_qrcode/',blank=True)
+#     rust_qrcode = models.ImageField(upload_to='rust_qrcode/', blank=True)
+#     qr_code = models.ImageField(upload_to='software_qrcode/', blank=True)
+#     pptx_file = models.FileField(upload_to='pptx_SF', blank=True)
+#     sertificate_front = models.FileField(upload_to='software_ser_front/', blank=True)
+#     sertificate_back = models.FileField(upload_to='software_ser_back/', blank=True)
+
+#     def __str__(self):
+#         return self.ism
+    
+#     def generate_seria(self):
+#         return 'SF'
+
+#     def generate_sertificate_id(self):
+#         last_student = SoftWare.objects.order_by('-sertificate_id').first()
+#         if last_student and last_student.sertificate_id:
+#             last_id_int = int(last_student.sertificate_id)
+#             new_id_int = last_id_int + 1
+#             new_id_str = str(new_id_int).zfill(7)
+#             return new_id_str
+#         return "0000001"
+
+
+    
+#     def overlay_qr_code_front(self, background_path, qr_code_path, output_path, position, qr_size):
+#         background = Image.open(background_path)
+#         qr_code = Image.open(qr_code_path).resize((qr_size, qr_size), Image.LANCZOS)
+
+#         qr_code = qr_code.convert("RGBA")
+#         data = qr_code.getdata()
+#         new_data = [(255, 255, 255, 0) if item[:3] == (255, 255, 255) else item for item in data]
+#         qr_code.putdata(new_data)
+
+#         background.paste(qr_code, position, qr_code)
+
+#         font = ImageFont.truetype(os.path.join(settings.BASE_DIR, 'media/template/arialmt.ttf'), size=100)
+#         draw = ImageDraw.Draw(background)
+#         seria_font = ImageFont.truetype(os.path.join(settings.BASE_DIR, 'media/template/arialmt.ttf'), size=45)
+
+#         black_color = (0, 0, 0)
+#         text_color = (0x54, 0x30, 0xCE)
+
+#         text = f"{self.ism} {self.familya} {self.sharif}"
+#         draw.text((1500, 980), text,fill=text_color, anchor="ms", font=font)
+#         draw.text((800, 1810), f"{self.seria} {self.sertificate_id}", fill=black_color, font=seria_font)
+#         draw.text((1350, 1810), f"{self.berilgan_vaqt}", fill=black_color, font=seria_font)
+
+#         background.save(output_path)
+
+    
+#     def overlay_qr_code_back(self, background_path, qr_code_path_front, qr_code_path_back, output_path, position_front, qr_size_front, position_back, qr_size_back, is_frontend_available=True, is_backend_available=True):
+#         background = Image.open(background_path)
+#         draw = ImageDraw.Draw(background)
+        
+#         if qr_code_path_front is not None and is_frontend_available:
+#             frontend_qrcode = Image.open(qr_code_path_front).resize((qr_size_front, qr_size_front), Image.LANCZOS)
+#             frontend_qrcode = frontend_qrcode.convert("RGBA")
+#             data = frontend_qrcode.getdata()
+#             new_data = [(255, 255, 255, 0) if item[:3] == (255, 255, 255) else item for item in data]
+#             frontend_qrcode.putdata(new_data)
+#             background.paste(frontend_qrcode, position_front, frontend_qrcode)
+
+#         if qr_code_path_back is not None and is_backend_available:
+#             backend_qrcode = Image.open(qr_code_path_back).resize((qr_size_back, qr_size_back), Image.LANCZOS)
+#             backend_qrcode = backend_qrcode.convert("RGBA")
+#             data = backend_qrcode.getdata()
+#             new_data = [(255, 255, 255, 0) if item[:3] == (255, 255, 255) else item for item in data]
+#             backend_qrcode.putdata(new_data)
+#             background.paste(backend_qrcode, position_back, backend_qrcode)
+            
+
+
+#         font = ImageFont.truetype(os.path.join(settings.BASE_DIR, 'media/template/arialmt.ttf'), size=100)
+#         seria_font = ImageFont.truetype(os.path.join(settings.BASE_DIR, 'media/template/arialmt.ttf'), size=80)
+#         seria_font_sr = ImageFont.truetype(os.path.join(settings.BASE_DIR,"media/template/arialmt.ttf"), size=45)
+
+#         black_color = (0, 0, 0)
+#         text_color = (0x53, 0x2F, 0xCE)
+#         text = f"{self.ism} {self.familya} {self.sharif}"
+#         draw.text((1500, 440), text,fill=text_color, anchor="ms", font=font, stroke_width=4)
+
+#         # draw.text((205, 115), f"{self.ism} {self.familya} {self.sharif}", fill=text_color, font=font)
+#         draw.text((190, 128), f"{self.seria} {self.sertificate_id}", fill=black_color, font = seria_font_sr)
+#         draw.text((890, 1150), f"{self.preseason_web}", fill=black_color, font = seria_font)
+#         draw.text((1760, 1150), f"{self.season_arc}", fill=black_color, font = seria_font)
+#         draw.text((2700, 1150), f"{self.season_arc_2}", fill=black_color, font = seria_font)
+#         draw.text((1120, 1300), f"{self.software}", fill=black_color, font = seria_font)
+#         draw.text((2620, 1300), f"{self.rust}", fill=black_color, font = seria_font)
+
+#         background.save(output_path)
+
+
+           
+#     def add_image(self, prs, slide_index, image_path, left, top, height):
+#         slide = prs.slides[slide_index]
+#         image = Image.open(image_path)
+#         image = image.convert('RGBA')
+#         data = list(image.getdata())
+#         new_data = [(255, 255, 255, 0) if item[:3] == (255, 255, 255) else item for item in data]
+#         new_image = Image.new('RGBA', image.size)
+#         new_image.putdata(new_data)
+#         image_stream = BytesIO()
+#         new_image.save(image_stream, format="PNG")
+#         image_stream.seek(0)
+#         slide.shapes.add_picture(image_stream, left, top, height=height)
+
+#     def add_text(self,prs, slide_index, left, top, width, height, input_text, font_size, font_color, font_name='Arial', alignment=PP_ALIGN.LEFT):
+#         slide = prs.slides[slide_index]
+#         text_box = slide.shapes.add_textbox(left, top, width, height)
+#         text_frame = text_box.text_frame
+#         text = text_frame.add_paragraph()
+#         text.text = input_text  
+#         text.font.size = Pt(font_size)
+#         text.font.name = font_name
+#         text.font.color.rgb = RGBColor(font_color[0], font_color[1], font_color[2])
+#         text.alignment = alignment
+
+#     def generate_certificate(self):
+#         pptx_template_path = os.path.join(settings.MEDIA_ROOT, 'template/soft.pptx')
+#         prs = Presentation(pptx_template_path)
+
+#         black_color = (0, 0, 0,)
+#         text_color = (0x54, 0x30, 0xCE)
+#         text = f"{self.ism} {self.familya} {self.sharif}"
+#         seria = f"{self.seria} {self.sertificate_id}"
+#         qr_code = os.path.join(settings.MEDIA_ROOT, f'software_qrcode/qr_code-{self.sertificate_id}.png')
+#         qr_code_img_back = os.path.join(settings.MEDIA_ROOT, f'rust_qrcode/qr_code-{self.sertificate_id}.png')
+#         qr_code_img_front = os.path.join(settings.MEDIA_ROOT, f'soft_qrcode/qr_code-{self.sertificate_id}.png')
+#         berilgan_vaqt_str = self.berilgan_vaqt.strftime('%Y-%m-%d')
+#         # Slayd 0
+#         self.add_image(prs, 0, qr_code, Inches(0.3), Inches(4.7), Inches(1.8))
+#         self.add_text(prs, 0, Inches(1), Inches(2.55), Inches(8), Inches(1), text, 28, text_color, alignment=PP_ALIGN.CENTER)
+#         self.add_text(prs, 0, Inches(4.37), Inches(5.64), Inches(1), Inches(1), berilgan_vaqt_str, 11, black_color,)
+#         self.add_text(prs, 0, Inches(2.55), Inches(5.64), Inches(1), Inches(1), seria, 11, black_color)
+
+#         # Slayd 1
+#         self.add_text(prs, 1, Inches(0.54), Inches(0.028), Inches(1), Inches(0.8), seria, 11, black_color)
+#         self.add_text(prs, 1, Inches(1), Inches(0.75), Inches(8), Inches(1), text, 28, text_color, alignment=PP_ALIGN.CENTER)
+#         self.add_text(prs, 1, Inches(3.1181102362), Inches(3.4645669291), Inches(1), Inches(1), self.preseason_web, 12, black_color)
+#         self.add_text(prs, 1, Inches(5.9212598425), Inches(3.4645669291), Inches(1), Inches(1), self.season_arc, 12, black_color)
+#         self.add_text(prs, 1, Inches(8.9330708661), Inches(3.4645669291), Inches(1), Inches(1), self.season_arc_2, 12, black_color)
+#         self.add_text(prs, 1, Inches(3.82), Inches(4.0433070866), Inches(1), Inches(1), self.software, 12, black_color)
+#         self.add_text(prs, 1, Inches(8.90), Inches(4.0433070866), Inches(1), Inches(1), self.rust, 12, black_color)
+
+        
+#         self.add_image(prs, 1, qr_code_img_front, Inches(3.3661417323), Inches(4.842519685), Inches(1.4))
+#         if self.rust_url:
+#             self.add_image(prs, 1, qr_code_img_back, Inches(8.4645669291), Inches(4.842519685), Inches(1.4))
+#         # else:
+#         #     self.add_image(prs, 1, qr_code_img_back, Inches(8.4645669291), Inches(4.842519685), Inches(1.4))
+#         #     self.add_image(prs, 1, qr_code_img_front, Inches(3.3661417323), Inches(4.842519685), Inches(1.4))
+
+
+# # add_image(prs, slayd, png, left,top,height)
+
+
+# #add_text(prs, slayd, left, top, width, height, text, size, color)
+#         pptx_buffer = BytesIO()
+#         prs.save(pptx_buffer)
+#         pptx_buffer.seek(0)
+
+#         return pptx_buffer
+
+    
+#     def save(self, *args, **kwargs):
+#         if not self.seria:
+#             self.seria = self.generate_seria()
+
+#         if not self.sertificate_id:
+#             self.sertificate_id = self.generate_sertificate_id()
+        
+#         if self.software_url:
+#             qr_code_img_front = qrcode.make(f"{self.software_url}")
+#             canvas = Image.new('RGB', (500, 500), 'white')
+#             canvas.paste(qr_code_img_front)
+#             buffer = BytesIO()
+#             canvas.save(buffer, format='PNG')
+#             qr_code_file_name = f'qr_code-{self.sertificate_id}.png'
+#             self.software_qrcode.save(qr_code_file_name, File(buffer), save=False)
+#             canvas.close()
+
+#         if self.rust_url:
+#             qr_code_img_back = qrcode.make(f"{self.rust_url}")
+#             canvas = Image.new('RGB', (500, 500), 'white')
+#             canvas.paste(qr_code_img_back)
+#             buffer = BytesIO()
+#             canvas.save(buffer, format='PNG')
+#             qr_code_file_name = f'qr_code-{self.sertificate_id}.png'
+#             self.rust_qrcode.save(qr_code_file_name, File(buffer), save=False)
+#             canvas.close()
+
+#         qr_code_img = qrcode.make(f"http://127.0.0.1:8000/SF/{self.sertificate_id}/")
+#         canvas = Image.new('RGB', (380, 380), 'white')
+#         canvas.paste(qr_code_img)
+#         buffer = BytesIO()
+#         canvas.save(buffer, format='PNG')
+#         qr_code_file_name = f'qr_code-{self.sertificate_id}.png'
+#         self.qr_code.save(qr_code_file_name, File(buffer), save=False)
+#         canvas.close()
+
+#         if not self.sertificate_front:
+#             if not self.rust_url:
+#                 background_image_path_front = os.path.join(settings.MEDIA_ROOT, 'template/software.png')
+#             else:
+#                 background_image_path_front = os.path.join(settings.MEDIA_ROOT, 'template/software.png')
+#             qr_code_image_path_front = os.path.join(settings.MEDIA_ROOT, f'software_qrcode/qr_code-{self.sertificate_id}.png')
+#             output_image_path_front = os.path.join(settings.MEDIA_ROOT, f'software_ser_front/certificate-{self.sertificate_id}.png')
+#             self.overlay_qr_code_front(background_image_path_front, qr_code_image_path_front, output_image_path_front, (102, 1420), 520)
+#             self.sertificate_front = os.path.relpath(output_image_path_front, settings.MEDIA_ROOT)
+
+#         if not self.sertificate_back:
+#             if not self.rust_url:
+#                 background_image_path_back = os.path.join(settings.MEDIA_ROOT, 'template/software_1.png')
+#             else:
+#                 background_image_path_back = os.path.join(settings.MEDIA_ROOT, 'template/software_1.png')
+#             qr_code_img_front = None
+#             qr_code_img_back = None
+#             output_image_path_back = None
+                    
+#             if self.software_url:
+#                 qr_code_img_front = os.path.join(settings.MEDIA_ROOT, f'soft_qrcode/qr_code-{self.sertificate_id}.png')
+#             if self.rust_url:
+#                 qr_code_img_back = os.path.join(settings.MEDIA_ROOT, f'rust_qrcode/qr_code-{self.sertificate_id}.png')
+
+#             if qr_code_img_front or qr_code_img_back:
+#                 output_image_path_back = os.path.join(settings.MEDIA_ROOT, f'software_ser_back/certificate-{self.sertificate_id}.png')
+                
+#                 # Set the coordinates for "Not Available" text
+                
+#                 self.overlay_qr_code_back(background_image_path_back, qr_code_img_front, qr_code_img_back, output_image_path_back, (1010, 1460), 410, (2545, 1460), 410, is_frontend_available=bool(qr_code_img_front), is_backend_available=bool(qr_code_img_back))
+                
+#                 self.sertificate_back.save(os.path.basename(output_image_path_back), File(open(output_image_path_back, 'rb')))
+
+#         if not self.pptx_file:
+#             pptx_buffer = self.generate_certificate()
+#             self.pptx_file.save(f'certificate-{self.sertificate_id}.pptx', ContentFile(pptx_buffer.read()), save=False)
+          
+#         super(SoftWare, self).save(*args, **kwargs)
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+VIEWS.PY QIDIRISH
+
+
+
+from django.shortcuts import render, get_object_or_404, redirect
+from .models import *
+from django.db.models import Q
+from django.http import HttpResponse
+import csv
+from io import TextIOWrapper
+from datetime import datetime
+from django.shortcuts import render
+from io import BytesIO
+from .forms import SearchForm
+
+
+def search_certificates(request):
+    if 'sertificate_id' in request.GET and 'seria' in request.GET:
+        sertificate_id = request.GET['sertificate_id']
+        seria = request.GET['seria']
+        
+        info = None  # Bo'sh ma'lumotlarni aniqlash uchun o'zgaruvchi
+        
+        # Ma'lumotlarni 4 ta model orasida qidirish
+        if DataSciense.objects.filter(sertificate_id__iexact=sertificate_id, seria__iexact=seria).exists():
+            info = DataSciense.objects.get(sertificate_id__iexact=sertificate_id, seria__iexact=seria)
+        elif SoftWare.objects.filter(sertificate_id__iexact=sertificate_id, seria__iexact=seria).exists():
+            info = SoftWare.objects.get(sertificate_id__iexact=sertificate_id, seria__iexact=seria)
+        elif IT_Educator.objects.filter(sertificate_id__iexact=sertificate_id, seria__iexact=seria).exists():
+            info = IT_Educator.objects.get(sertificate_id__iexact=sertificate_id, seria__iexact=seria)
+        elif FullStack.objects.filter(sertificate_id__iexact=sertificate_id, seria__iexact=seria).exists():
+            info = FullStack.objects.get(sertificate_id__iexact=sertificate_id, seria__iexact=seria)
+        
+        if info is not None:
+            return render(request, 'index.html', {'info': info})
+        else:
+            error_message = 'Berilgan ID raqamiga ega talaba topilmadi'
+            return render(request, 'index.html', {'error_message': error_message, 'sertificate_id': sertificate_id, 'seria': seria})
+    else:
+        error_message = 'Qidiruv uchun sertifikat ID raqamini va seria ni taqdim eting'
+        return render(request, 'index.html', {'error_message': error_message})

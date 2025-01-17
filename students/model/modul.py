@@ -230,7 +230,8 @@ class PHPModule(models.Model):
             self.overlay_qr_code_back(background_image_path_back, qr_code_image_path_back, output_image_path_back,
                                       (2535, 1445), 390)
 
-            self.sertificate_back = output_image_path_back
+            self.sertificate_back = os.path.relpath(output_image_path_back, settings.MEDIA_ROOT)
+
 
         if not self.pptx_file:
             pptx_buffer = self.generate_certificate()
@@ -443,7 +444,8 @@ class PythonModule(models.Model):
             self.overlay_qr_code_back(background_image_path_back, qr_code_image_path_back, output_image_path_back,
                                       (2535, 1445), 390)
 
-            self.sertificate_back = output_image_path_back
+            self.sertificate_back = os.path.relpath(output_image_path_back, settings.MEDIA_ROOT)
+
 
         if not self.pptx_file:
             pptx_buffer = self.generate_certificate()
@@ -654,7 +656,8 @@ class ReactModule(models.Model):
             self.overlay_qr_code_back(background_image_path_back, qr_code_image_path_back, output_image_path_back,
                                       (2535, 1445), 390)
 
-            self.sertificate_back = output_image_path_back
+            self.sertificate_back = os.path.relpath(output_image_path_back, settings.MEDIA_ROOT)
+
 
         if not self.pptx_file:
             pptx_buffer = self.generate_certificate()
@@ -867,7 +870,8 @@ class CSharpModule(models.Model):
             self.overlay_qr_code_back(background_image_path_back, qr_code_image_path_back, output_image_path_back,
                                       (2535, 1445), 390)
 
-            self.sertificate_back = output_image_path_back
+            self.sertificate_back = os.path.relpath(output_image_path_back, settings.MEDIA_ROOT)
+
 
         if not self.pptx_file:
             pptx_buffer = self.generate_certificate()

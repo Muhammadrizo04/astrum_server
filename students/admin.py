@@ -18,9 +18,9 @@ class ITEducatorAdmin(ImportExportModelAdmin):
     resource_class = ITEducatorResource
     search_fields = ['ism', 'familya', 'sharif', 'sertificate_id', 'seria', ]
     list_display = ('ism', 'familya', 'sharif', 'create_date', 'seria', 'sertificate_id',)
-    actions = [DownloadPptxFile]
+    actions = [DownloadPptxFile, clear_student_fields]
     list_filter = (('create_date', DateRangePicker), ('sertificate_id_numeric', RangeNumericFilter),)
-    list_per_page = 50
+    list_per_page = 300
 
 
 class InteriorDesignResource(resources.ModelResource):

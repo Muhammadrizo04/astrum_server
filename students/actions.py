@@ -9,7 +9,7 @@ def clear_student_fields(modeladmin, request, queryset):
         student.pptx_file = None
         student.qr_code = None
         student.sertificate_front = None
-#        student.sertificate_back = None
+        student.sertificate_back = None
         student.save()
 
 clear_student_fields.short_description = "Clear selected students' fields"

@@ -1,17 +1,19 @@
-import time
-from django.db import models
-import qrcode
-from io import BytesIO
-from django.core.files import File
-from PIL import Image, ImageDraw, ImageFont
-from django.conf import settings
 import os
-from pptx.util import Inches, Pt
-from pptx.dml.color import RGBColor
-from pptx.enum.text import PP_ALIGN
+from io import BytesIO
+from datetime import datetime
 
-from pptx import Presentation
+from django.db import models
+from django.conf import settings
+from django.core.files import File
 from django.core.files.base import ContentFile
+
+import qrcode
+from PIL import Image, ImageDraw, ImageFont
+from openpyxl.styles.builtins import output
+from pptx.util import Inches, Pt
+from pptx.enum.text import PP_ALIGN
+from pptx.dml.color import RGBColor
+from pptx import Presentation
 
 
 class ITEducator(models.Model):
@@ -29,7 +31,7 @@ class ITEducator(models.Model):
     modul_2_ball = models.CharField(max_length=30)
     modul_3p = models.CharField(max_length=30)
     modul_3_ball = models.CharField(max_length=30)
-    pptx_file = models.FileField(upload_to='pptx_MK', null=True, blank=True)
+    pptx_file = models.FileField(upload_to='pptx_MK/', null=True, blank=True)
     qr_code = models.ImageField(upload_to='malaka_qrcode/', null=True, blank=True)
     sertificate_id = models.CharField(max_length=7, unique=True, null=True, blank=True)
     sertificate_id_numeric = models.IntegerField(unique=True, blank=True)
@@ -57,6 +59,19 @@ class ITEducator(models.Model):
             new_id_int = last_id_int + 1
             return new_id_int
         return 1
+
+    def create_qr_code(self):
+        print('qrcode')
+        qr_code_img = qrcode.make(f"https://certificate.astrum.uz/student/MK{self.sertificate_id}")
+        canvas = Image.new('RGB', (380, 380), 'white')
+        canvas.paste(qr_code_img)
+        buffer = BytesIO()
+        canvas.save(buffer, format='PNG')
+        qr_code_file_name = f'qr_code-{self.sertificate_id}.png'
+
+        # Сохраняем файл без суффикса
+        self.qr_code.save(qr_code_file_name, ContentFile(buffer.getvalue()), save=False)
+        canvas.close()
 
     def add_image(self, prs, slide_index, image_path, left, top, height):
         slide = prs.slides[slide_index]
@@ -86,6 +101,7 @@ class ITEducator(models.Model):
             run.font.bold = True
 
     def generate_certificate(self):
+        print("pptx")
         pptx_template_path = os.path.join(settings.MEDIA_ROOT, 'template/malaka.pptx')
         prs = Presentation(pptx_template_path)
 
@@ -110,6 +126,8 @@ class ITEducator(models.Model):
         modul_3_ball = f"{self.modul_3_ball} ball/ points"
         umumiy_ball = f"{self.umumiy_ball} ball/ points"
         # Slayd 1
+
+
         self.add_text(prs, 1, Inches(0.54), Inches(0.028), Inches(1), Inches(0.8), seria, 11, black_color)
         self.add_text(prs, 1, Inches(1), Inches(0.75), Inches(8), Inches(1), text, 28, text_color,
                       alignment=PP_ALIGN.CENTER)
@@ -126,56 +144,79 @@ class ITEducator(models.Model):
         # add_image(prs, slayd, png, left,top,height)
 
         # add_text(prs, slayd, left, top, width, height, text, size, color)
-        pptx_buffer = BytesIO()
-        prs.save(pptx_buffer)
-        pptx_buffer.seek(0)
+        output_path = os.path.join(settings.MEDIA_ROOT, f'pptx_MK/{self.seria}-{self.sertificate_id}-{self.familya}-{self.ism}-{self.sharif}.pptx')
 
-        return pptx_buffer
+        prs.save(output_path)
+        self.pptx_file = os.path.relpath(output_path, settings.MEDIA_ROOT)
 
-    def overlay_qr_code_front(self, background_path, qr_code_path, output_path, position, qr_size):
+
+
+    def overlay_qr_code_front(self):
+        print('front')
+        # Пути к файлам
+        background_path = os.path.join(settings.MEDIA_ROOT, 'template/malaka-1.png')
+        qr_code_path = os.path.join(settings.MEDIA_ROOT, f'malaka_qrcode/qr_code-{self.sertificate_id}.png')
+        output_path = os.path.join(settings.MEDIA_ROOT, f'malaka_ser_front/certificate-{self.sertificate_id}.png')
+        # Параметры QR-кода
+        position = (115, 1435)# Координаты, где разместить QR-код
+        # Открываем изображение и QR-код
         background = Image.open(background_path)
-        qr_code = Image.open(qr_code_path).resize((qr_size, qr_size), Image.LANCZOS)
-
+        qr_code = Image.open(qr_code_path).resize((390, 390), Image.LANCZOS)
+        # Делаем фон QR-кода прозрачным
         qr_code = qr_code.convert("RGBA")
         data = qr_code.getdata()
         new_data = [(255, 255, 255, 0) if item[:3] == (255, 255, 255) else item for item in data]
         qr_code.putdata(new_data)
-
+        # Накладываем QR-код
         background.paste(qr_code, position, qr_code)
-
-        font = ImageFont.truetype(os.path.join(settings.MEDIA_ROOT, 'template/Gilroy-Black.ttf'), size=100)
-        draw = ImageDraw.Draw(background)
-        seria_font = ImageFont.truetype(os.path.join(settings.MEDIA_ROOT, 'template/Gilroy-Black.ttf'), size=45)
-
+        # Подгружаем шрифты
+        font_path = os.path.join(settings.MEDIA_ROOT, 'template/Gilroy-Black.ttf')
+        font = ImageFont.truetype(font_path, size=100)
+        seria_font = ImageFont.truetype(font_path, size=45)
+        # Цвета текста
         black_color = (0, 0, 0)
         text_color = (0x54, 0x30, 0xCE)
-
+        # Добавляем текст на изображение
+        draw = ImageDraw.Draw(background)
         text = f"{self.familya} {self.ism}  {self.sharif}"
         draw.text((1500, 980), text, fill=text_color, anchor="ms", font=font)
         draw.text((800, 1810), f"{self.seria} {self.sertificate_id}", fill=black_color, font=seria_font)
         draw.text((1190, 1810), f"{self.berilgan_vaqt}", fill=black_color, font=seria_font)
         draw.text((1540, 1810), f"{self.amal_qilish}", fill=black_color, font=seria_font)
-
+        # Сохраняем изображение
         background.save(output_path)
+        # Сохраняем путь в поле модели
+        self.sertificate_front = os.path.relpath(output_path, settings.MEDIA_ROOT)
 
-    def overlay_qr_code_back(self, background_path, qr_code_path, output_path, position, qr_size):
+    def overlay_qr_code_back(self):
+        print('back')
+        background_path = os.path.join(settings.MEDIA_ROOT, 'template/malaka-2.png')
+        qr_code_path = os.path.join(settings.MEDIA_ROOT, f'malaka_qrcode/qr_code-{self.sertificate_id}.png')
+        output_path = os.path.join(settings.MEDIA_ROOT, f'malaka_ser_back/certificate-{self.sertificate_id}.png')
+
+        # Параметры QR-кода
+        position = (2535, 1445)  # Координаты, где разместить QR-код
+
+        # Открываем изображение и QR-код
         background = Image.open(background_path)
-        qr_code = Image.open(qr_code_path).resize((qr_size, qr_size), Image.LANCZOS)
-
+        qr_code = Image.open(qr_code_path).resize((390, 390), Image.LANCZOS)
+        # Делаем фон QR-кода прозрачным
         qr_code = qr_code.convert("RGBA")
         data = qr_code.getdata()
         new_data = [(255, 255, 255, 0) if item[:3] == (255, 255, 255) else item for item in data]
         qr_code.putdata(new_data)
-
+        # Накладываем QR-код
         background.paste(qr_code, position, qr_code)
-
-        font = ImageFont.truetype(os.path.join(settings.MEDIA_ROOT, 'template/Gilroy-Black.ttf'), size=100)
-        draw = ImageDraw.Draw(background)
-        seria_font = ImageFont.truetype(os.path.join(settings.MEDIA_ROOT, 'template/Gilroy-Black.ttf'), size=50)
-        seria_font_sr = ImageFont.truetype(os.path.join(settings.MEDIA_ROOT, 'template/Gilroy-Black.ttf'), size=45)
-
+        # Подгружаем шрифты
+        font_path = os.path.join(settings.MEDIA_ROOT, 'template/Gilroy-Black.ttf')
+        font = ImageFont.truetype(font_path, size=100)
+        seria_font = ImageFont.truetype(font_path, size=50)
+        seria_font_sr = ImageFont.truetype(font_path, size=45)
+        # Цвета текста
         black_color = (0, 0, 0)
         text_color = (0x54, 0x30, 0xCE)
+        # Добавляем текст на изображение
+        draw = ImageDraw.Draw(background)
         text = f"{self.familya} {self.ism}  {self.sharif}"
         draw.text((1500, 440), text, fill=text_color, anchor="ms", font=font)
         draw.text((190, 128), f"{self.seria} {self.sertificate_id}", fill=black_color, font=seria_font_sr)
@@ -184,7 +225,11 @@ class ITEducator(models.Model):
         draw.text((770, 1770), f"{self.modul_3_ball} ball/ points", fill=black_color, font=seria_font)
         draw.text((1940, 1240), f"{self.umumiy_ball} ball/ points", fill=black_color, font=seria_font)
 
+        # Сохраняем изображение
         background.save(output_path)
+
+        # Сохраняем путь в поле модели
+        self.sertificate_back = os.path.relpath(output_path, settings.MEDIA_ROOT)
 
     def save(self, *args, **kwargs):
         if not self.sertificate_id:
@@ -193,45 +238,23 @@ class ITEducator(models.Model):
         if not self.sertificate_id_numeric:
             self.sertificate_id_numeric = self.generate_sertificate_id_numeric()
 
-        # bu yerga qaysi silkaga qr code yaratish kerak bo'lsa o'sha silka qo'yilsin
-        qr_code_img = qrcode.make(f"https://certificate.astrum.uz/student/MK{self.sertificate_id}")
-        canvas = Image.new('RGB', (380, 380), 'white')
-        canvas.paste(qr_code_img)
-        buffer = BytesIO()
-        canvas.save(buffer, format='PNG')
-        qr_code_file_name = f'qr_code-{self.sertificate_id}.png'
-        self.qr_code.save(qr_code_file_name, File(buffer), save=False)
-        canvas.close()
+        qr_code_path = os.path.join(settings.MEDIA_ROOT, f'malaka_qrcode/qr_code-{self.sertificate_id}.png')
+        if not os.path.exists(qr_code_path):
+            self.create_qr_code()
 
-        if not self.sertificate_front:
-            background_image_path_front = os.path.join(settings.MEDIA_ROOT, 'template/malaka-1.png')
-            qr_code_image_path_front = os.path.join(settings.MEDIA_ROOT,
-                                                    f'malaka_qrcode/qr_code-{self.sertificate_id}.png')
-            output_image_path_front = os.path.join(settings.MEDIA_ROOT,
-                                                   f'malaka_ser_front/certificate-{self.sertificate_id}.png')
-            self.overlay_qr_code_front(background_image_path_front, qr_code_image_path_front, output_image_path_front,
-                                       (115, 1435), 390)
-            self.sertificate_front = os.path.relpath(output_image_path_front, settings.MEDIA_ROOT)
 
-        if not self.sertificate_back:
-            background_image_path_back = os.path.join(settings.MEDIA_ROOT, 'template/malaka-2.png')
-            qr_code_image_path_back = os.path.join(settings.MEDIA_ROOT,
-                                                   f'malaka_qrcode/qr_code-{self.sertificate_id}.png')
-            output_image_path_back = os.path.join(settings.MEDIA_ROOT,
-                                                  f'malaka_ser_back/certificate-{self.sertificate_id}.png')
-            self.overlay_qr_code_back(background_image_path_back, qr_code_image_path_back, output_image_path_back,
-                                      (2535, 1445), 390)
-            self.sertificate_back = os.path.relpath(output_image_path_back, settings.MEDIA_ROOT)
+        pptx_path = os.path.join(settings.MEDIA_ROOT, f'pptx_MK/{self.seria}-{self.sertificate_id}-{self.familya}-{self.ism}-{self.sharif}.pptx')
+        if not os.path.exists(pptx_path):
+            self.generate_certificate()
 
-            self.sertificate_back.save(os.path.basename(output_image_path_back),
-                                       File(open(output_image_path_back, 'rb')))
+        front = os.path.join(settings.MEDIA_ROOT, f'malaka_ser_front/certificate-{self.sertificate_id}.png')
+        if not os.path.exists(front):
+            self.overlay_qr_code_front()
 
-        if not self.pptx_file:
-            pptx_buffer = self.generate_certificate()
-            self.pptx_file.save(f'{self.seria}-{self.sertificate_id}-{self.familya}-{self.ism}-{self.sharif}.pptx',
-                                ContentFile(pptx_buffer.read()), save=False)
-#        time.sleep(15)
-#        print('time on')
+        back = os.path.join(settings.MEDIA_ROOT, f'malaka_ser_back/certificate-{self.sertificate_id}.png')
+        if not os.path.exists(back):
+            self.overlay_qr_code_back()
+
         super(ITEducator, self).save(*args, **kwargs)
 
 

@@ -57,6 +57,17 @@ class ITEducator(models.Model):
             new_id_int = last_id_int + 1
             return new_id_int
         return 1
+    
+    def generate_qr_code(self):
+        # bu yerga qaysi silkaga qr code yaratish kerak bo'lsa o'sha silka qo'yilsin
+        qr_code_img = qrcode.make(f"https://certificate.astrum.uz/student/MK{self.sertificate_id}")
+        canvas = Image.new('RGB', (380, 380), 'white')
+        canvas.paste(qr_code_img)
+        buffer = BytesIO()
+        canvas.save(buffer, format='PNG')
+        qr_code_file_name = f'qr_code-{self.sertificate_id}.png'
+        self.qr_code.save(qr_code_file_name, File(buffer), save=False)
+        canvas.close()
 
     def add_image(self, prs, slide_index, image_path, left, top, height):
         slide = prs.slides[slide_index]
@@ -101,7 +112,7 @@ class ITEducator(models.Model):
         # Slayd 0
         self.add_image(prs, 0, qr_code, Inches(0.3976377953), Inches(4.7952755906), Inches(1.3))
         self.add_text(prs, 0, Inches(1), Inches(2.55), Inches(8), Inches(1), text, 28, text_color,
-                      alignment=PP_ALIGN.CENTER)
+                    alignment=PP_ALIGN.CENTER)
         self.add_text(prs, 0, Inches(3.82), Inches(5.64), Inches(1), Inches(1), berilgan, 12, black_color, )
         self.add_text(prs, 0, Inches(5.04), Inches(5.64), Inches(1), Inches(1), amal_qilish_mudati, 12, black_color, )
         self.add_text(prs, 0, Inches(2.55), Inches(5.64), Inches(1), Inches(1), seria, 12, black_color)
@@ -112,15 +123,15 @@ class ITEducator(models.Model):
         # Slayd 1
         self.add_text(prs, 1, Inches(0.54), Inches(0.028), Inches(1), Inches(0.8), seria, 11, black_color)
         self.add_text(prs, 1, Inches(1), Inches(0.75), Inches(8), Inches(1), text, 28, text_color,
-                      alignment=PP_ALIGN.CENTER)
+                    alignment=PP_ALIGN.CENTER)
         self.add_text(prs, 1, Inches(2.44), Inches(3.74), Inches(1.7440944882), Inches(0.3346456693),
-                      modul_1_ball, 14, black_color)  # modul 1 ball
+                    modul_1_ball, 14, black_color)  # modul 1 ball
         self.add_text(prs, 1, Inches(2.44), Inches(4.61), Inches(1.7440944882), Inches(0.3346456693),
-                      modul_2_ball, 14, black_color)  # modul 2 ball
+                    modul_2_ball, 14, black_color)  # modul 2 ball
         self.add_text(prs, 1, Inches(2.44), Inches(5.55), Inches(1.7440944882), Inches(0.3346456693),
-                      modul_3_ball, 14, black_color)  # modul 3 ball
+                    modul_3_ball, 14, black_color)  # modul 3 ball
         self.add_text(prs, 1, Inches(6.3385826772), Inches(3.7), Inches(1.7440944882), Inches(0.3346456693),
-                      umumiy_ball, 14, black_color)  # modul umumiy ball
+                    umumiy_ball, 14, black_color)  # modul umumiy ball
         self.add_image(prs, 1, qr_code_img_back, Inches(8.4448818898), Inches(4.8385826772), Inches(1.3))
 
         # add_image(prs, slayd, png, left,top,height)
@@ -193,38 +204,33 @@ class ITEducator(models.Model):
         if not self.sertificate_id_numeric:
             self.sertificate_id_numeric = self.generate_sertificate_id_numeric()
 
-        # bu yerga qaysi silkaga qr code yaratish kerak bo'lsa o'sha silka qo'yilsin
-        qr_code_img = qrcode.make(f"https://certificate.astrum.uz/student/MK{self.sertificate_id}")
-        canvas = Image.new('RGB', (380, 380), 'white')
-        canvas.paste(qr_code_img)
-        buffer = BytesIO()
-        canvas.save(buffer, format='PNG')
-        qr_code_file_name = f'qr_code-{self.sertificate_id}.png'
-        self.qr_code.save(qr_code_file_name, File(buffer), save=False)
-        canvas.close()
+        if getattr(self, "dry_run", False):
+            super().save(*args, **kwargs)
+            return
+        if not self.qr_code:
+            self.generate_qr_code()
 
         if not self.sertificate_front:
             background_image_path_front = os.path.join(settings.MEDIA_ROOT, 'template/malaka-1.png')
             qr_code_image_path_front = os.path.join(settings.MEDIA_ROOT,
                                                     f'malaka_qrcode/qr_code-{self.sertificate_id}.png')
             output_image_path_front = os.path.join(settings.MEDIA_ROOT,
-                                                   f'malaka_ser_front/certificate-{self.sertificate_id}.png')
+                                                f'malaka_ser_front/certificate-{self.sertificate_id}.png')
             self.overlay_qr_code_front(background_image_path_front, qr_code_image_path_front, output_image_path_front,
-                                       (115, 1435), 390)
+                                    (115, 1435), 390)
             self.sertificate_front = os.path.relpath(output_image_path_front, settings.MEDIA_ROOT)
 
         if not self.sertificate_back:
             background_image_path_back = os.path.join(settings.MEDIA_ROOT, 'template/malaka-2.png')
             qr_code_image_path_back = os.path.join(settings.MEDIA_ROOT,
-                                                   f'malaka_qrcode/qr_code-{self.sertificate_id}.png')
+                                                f'malaka_qrcode/qr_code-{self.sertificate_id}.png')
             output_image_path_back = os.path.join(settings.MEDIA_ROOT,
-                                                  f'malaka_ser_back/certificate-{self.sertificate_id}.png')
+                                                f'malaka_ser_back/certificate-{self.sertificate_id}.png')
             self.overlay_qr_code_back(background_image_path_back, qr_code_image_path_back, output_image_path_back,
-                                      (2535, 1445), 390)
+                                    (2535, 1445), 390)
             self.sertificate_back = os.path.relpath(output_image_path_back, settings.MEDIA_ROOT)
 
-            self.sertificate_back.save(os.path.basename(output_image_path_back),
-                                       File(open(output_image_path_back, 'rb')))
+            self.sertificate_back = os.path.relpath(output_image_path_back, settings.MEDIA_ROOT)
 
         if not self.pptx_file:
             pptx_buffer = self.generate_certificate()
@@ -617,9 +623,9 @@ class FullStack(models.Model):
             self.backend_qrcode.save(qr_code_file_name, File(buffer), save=False)
             canvas.close()
         qr_code_img = qrcode.make(f"https://certificate.astrum.uz/student/{self.seria}{self.sertificate_id}")
-       	canvas = Image.new('RGB', (380, 380), 'white')
-       	canvas.paste(qr_code_img)
-       	buffer = BytesIO()
+        canvas = Image.new('RGB', (380, 380), 'white')
+        canvas.paste(qr_code_img)
+        buffer = BytesIO()
         canvas.save(buffer, format='PNG')
         qr_code_file_name = f'qr_code-{self.seria}-{self.sertificate_id}.png'
         self.qr_code.save(qr_code_file_name, File(buffer), save=False)

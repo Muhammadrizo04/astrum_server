@@ -17,7 +17,7 @@ media/
 static/
 # AWS User-specific
 .idea/**/aws.xml
-
+.backup.sql
 # Generated files
 .idea/**/contentModel.xml
 

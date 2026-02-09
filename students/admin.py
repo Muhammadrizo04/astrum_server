@@ -9,6 +9,10 @@ from admin_numeric_filter.admin import RangeNumericFilter
 from .model import *
 
 class ITEducatorResource(resources.ModelResource):
+    def before_save_instance(self, instance, using_transactions, dry_run):
+        instance.dry_run = dry_run
+
+
     class Meta:
         model = ITEducator
 

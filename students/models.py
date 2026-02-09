@@ -198,47 +198,30 @@ class ITEducator(models.Model):
         background.save(output_path)
 
     def save(self, *args, **kwargs):
+        from django.db import transaction
+        from .tasks import generate_student_files
+
         if not self.sertificate_id:
             self.sertificate_id = self.generate_sertificate_id()
 
         if not self.sertificate_id_numeric:
             self.sertificate_id_numeric = self.generate_sertificate_id_numeric()
 
-        if getattr(self, "dry_run", False):
-            super().save(*args, **kwargs)
-            return
-        if not self.qr_code:
-            self.generate_qr_code()
+        super().save(*args, **kwargs)  # Save the instance to ensure we have an ID for file paths
 
-        if not self.sertificate_front:
-            background_image_path_front = os.path.join(settings.MEDIA_ROOT, 'template/malaka-1.png')
-            qr_code_image_path_front = os.path.join(settings.MEDIA_ROOT,
-                                                    f'malaka_qrcode/qr_code-{self.sertificate_id}.png')
-            output_image_path_front = os.path.join(settings.MEDIA_ROOT,
-                                                f'malaka_ser_front/certificate-{self.sertificate_id}.png')
-            self.overlay_qr_code_front(background_image_path_front, qr_code_image_path_front, output_image_path_front,
-                                    (115, 1435), 390)
-            self.sertificate_front = os.path.relpath(output_image_path_front, settings.MEDIA_ROOT)
+        # не запускать в preview
+        if not getattr(self, "dry_run", False):
+            transaction.on_commit(lambda: generate_student_files.delay(self.id))
 
-        if not self.sertificate_back:
-            background_image_path_back = os.path.join(settings.MEDIA_ROOT, 'template/malaka-2.png')
-            qr_code_image_path_back = os.path.join(settings.MEDIA_ROOT,
-                                                f'malaka_qrcode/qr_code-{self.sertificate_id}.png')
-            output_image_path_back = os.path.join(settings.MEDIA_ROOT,
-                                                f'malaka_ser_back/certificate-{self.sertificate_id}.png')
-            self.overlay_qr_code_back(background_image_path_back, qr_code_image_path_back, output_image_path_back,
-                                    (2535, 1445), 390)
-            self.sertificate_back = os.path.relpath(output_image_path_back, settings.MEDIA_ROOT)
 
-            self.sertificate_back = os.path.relpath(output_image_path_back, settings.MEDIA_ROOT)
-
-        if not self.pptx_file:
-            pptx_buffer = self.generate_certificate()
-            self.pptx_file.save(f'{self.seria}-{self.sertificate_id}-{self.familya}-{self.ism}-{self.sharif}.pptx',
-                                ContentFile(pptx_buffer.read()), save=False)
+        # if getattr(self, "dry_run", False):
+        #     super().save(*args, **kwargs)
+        #     return
+        
+        
 #        time.sleep(15)
 #        print('time on')
-        super(ITEducator, self).save(*args, **kwargs)
+        # super(ITEducator, self).save(*args, **kwargs)
 
 
 class InteriorDesign(models.Model):

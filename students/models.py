@@ -123,6 +123,9 @@ sharif = models.CharField(verbose_name='Отчество', max_length=200)
     )
     def __str__(self):
         return self.ism
+    class Meta:
+        verbose_name = "IT-преподаватель"
+        verbose_name_plural = "IT-преподаватели"
 
     def generate_sertificate_id(self):
         last_student = ITEducator.objects.order_by('-sertificate_id').first()

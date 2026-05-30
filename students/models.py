@@ -15,28 +15,112 @@ from django.core.files.base import ContentFile
 
 
 class ITEducator(models.Model):
-    ism = models.CharField(max_length=50)
-    familya = models.CharField(max_length=50)
-    sharif = models.CharField(max_length=200)
-    berilgan_vaqt = models.CharField(max_length=200)
-    amal_qilish = models.CharField(max_length=200)
-    create_date = models.DateTimeField(auto_now_add=True)
-    umumiy_p = models.CharField(max_length=30)
-    umumiy_ball = models.CharField(max_length=30)
-    modul_1p = models.CharField(max_length=30)
-    modul_1_ball = models.CharField(max_length=30)
-    modul_2p = models.CharField(max_length=30)
-    modul_2_ball = models.CharField(max_length=30)
-    modul_3p = models.CharField(max_length=30)
-    modul_3_ball = models.CharField(max_length=30)
-    pptx_file = models.FileField(upload_to='pptx_MK', null=True, blank=True)
-    qr_code = models.ImageField(upload_to='malaka_qrcode/', null=True, blank=True)
-    sertificate_id = models.CharField(max_length=7, unique=True, null=True, blank=True)
-    sertificate_id_numeric = models.IntegerField(unique=True, blank=True)
-    sertificate_front = models.FileField(upload_to='malaka_ser_front/', null=True, blank=True)
-    sertificate_back = models.FileField(upload_to='malaka_ser_back/', null=True, blank=True)
-    seria = models.CharField(max_length=3, default='MK')
-
+ism = models.CharField(verbose_name='Имя', max_length=50)
+familya = models.CharField(verbose_name='Фамилия', max_length=50)
+sharif = models.CharField(verbose_name='Отчество', max_length=200)
+    
+    berilgan_vaqt = models.CharField(
+        verbose_name='Дата выдачи сертификата',
+        max_length=200
+    )
+    
+    amal_qilish = models.CharField(
+        verbose_name='Срок действия сертификата',
+        max_length=200
+    )
+    
+    create_date = models.DateTimeField(
+        verbose_name='Дата создания записи',
+        auto_now_add=True
+    )
+    
+    umumiy_p = models.CharField(
+        verbose_name='Общий процент',
+        max_length=30
+    )
+    
+    umumiy_ball = models.CharField(
+        verbose_name='Общий балл',
+        max_length=30
+    )
+    
+    modul_1p = models.CharField(
+        verbose_name='Модуль 1 (%)',
+        max_length=30
+    )
+    
+    modul_1_ball = models.CharField(
+        verbose_name='Балл модуля 1',
+        max_length=30
+    )
+    
+    modul_2p = models.CharField(
+        verbose_name='Модуль 2 (%)',
+        max_length=30
+    )
+    
+    modul_2_ball = models.CharField(
+        verbose_name='Балл модуля 2',
+        max_length=30
+    )
+    
+    modul_3p = models.CharField(
+        verbose_name='Модуль 3 (%)',
+        max_length=30
+    )
+    
+    modul_3_ball = models.CharField(
+        verbose_name='Балл модуля 3',
+        max_length=30
+    )
+    
+    pptx_file = models.FileField(
+        verbose_name='Файл сертификата (PPTX)',
+        upload_to='pptx_MK',
+        null=True,
+        blank=True
+    )
+    
+    qr_code = models.ImageField(
+        verbose_name='QR-код',
+        upload_to='malaka_qrcode/',
+        null=True,
+        blank=True
+    )
+    
+    sertificate_id = models.CharField(
+        verbose_name='Номер сертификата',
+        max_length=7,
+        unique=True,
+        null=True,
+        blank=True
+    )
+    
+    sertificate_id_numeric = models.IntegerField(
+        verbose_name='Внутренний номер сертификата',
+        unique=True,
+        blank=True
+    )
+    
+    sertificate_front = models.FileField(
+        verbose_name='Сертификат (лицевая сторона)',
+        upload_to='malaka_ser_front/',
+        null=True,
+        blank=True
+    )
+    
+    sertificate_back = models.FileField(
+        verbose_name='Сертификат (обратная сторона)',
+        upload_to='malaka_ser_back/',
+        null=True,
+        blank=True
+    )
+    
+    seria = models.CharField(
+        verbose_name='Серия',
+        max_length=3,
+        default='MK'
+    )
     def __str__(self):
         return self.ism
 
